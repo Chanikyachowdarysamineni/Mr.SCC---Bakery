@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+         body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background-image: url('cart.jpg'); 
+  background-size: cover; 
+  background-position: center; 
+  background-repeat: no-repeat;
+  filter: none; 
+}
+        nav {
+            background-color: #333;
+            padding: 15px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        nav ul li a:hover {
+            color: #f39c12;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }
+        #cart-items {
+            text-align: center;
+            margin: 20px;
+        }
+        .cart-item {
+            margin: 10px 0;
+        }
+        .remove-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .remove-button:hover {
+            background-color: #c0392b;
+        }
+        .order-form {
+            display: none;
+            margin: 20px;
+            text-align: center;
+        }
+        .order-form input {
+            padding: 10px;
+            margin: 5px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .order-form button {
+            padding: 10px 15px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .order-form button:hover {
+            background-color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+  <nav>
+    <ul>
+        <li><a href="index.html"><button>HOME</button></a></li>
+        <li><a href="index1.html"><button>Cake Items</button></a></li>
+        <li><a href="index2.html"><button>Ice Creams</button></a></li>
+        <li><a href="index3.html"><button>Drinks</button></a></li>
+        <li><a href="index4.html"><button>Special Offers</button></a></li>
+        <li><a href="index5.html"><button>Contact Info</button></a></li>
+        <li><a href="index6.html"><button>Ordered Items</button></a></li>
+    </ul>
+</nav>
+    <h1>Your Cart</h1>
+    <div id="cart-items"></div>
+    <button id="placeOrderButton" onclick="showOrderForm()">Place Order</button>
+
+    <div class="order-form" id="orderForm">
+        <h2>Delivery Information</h2>
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="text" id="address" placeholder="Delivery Address" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
+        <button onclick="submitOrder()">Submit Order</button>
+    </div>
+
+    <script>
+        function displayCart() {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = ''; // Clear previous items
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p>Your cart is empty.</p>';
+            } else {
+                cart.forEach((item, index) => {
+                    cartItems.innerHTML += `
+                        <div class="cart-item">
+                            <p>${item.item} - $${item.price} <button class="remove-button" onclick="removeItem(${index})">Remove</button></p>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1); // Remove item from cart
+            localStorage.setItem('cart', JSON.stringify(cart)); // Update local storage
+            displayCart(); // Refresh cart display
+        }
+
+        function showOrderForm() {
+            const orderForm = document.getElementById('orderForm');
+            orderForm.style.display = 'block'; // Show the order form
+        }
+
+        function submitOrder() {
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const phone = document.getElementById('phone').value;
+
+            if (name && address && phone) {
+                alert(`Order placed successfully!\nName: ${name}\nAddress: ${address}\nPhone: ${phone}`);
+                localStorage.removeItem('cart'); // Clear cart after order
+                displayCart(); // Refresh cart display
+                document.getElementById('orderForm').style.display = 'none'; // Hide the order form
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+
+        displayCart(); // Initial call to display cart items
+    </script>
+</body>
+</html>

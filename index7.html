@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Status</title>
+  <style>
+    /* Basic styling for the page */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      width: 80%;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    table td {
+      background-color: #f9f9f9;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .no-orders {
+      text-align: center;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+
+    .status-delivered {
+      background-color: #8e44ad;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    /* OTP Section */
+    #otpSection {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #otpInput {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .otpButton {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #f39c12;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .otpButton:hover {
+      background-color: #e67e22;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Order Status</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer Name</th>
+          <th>Items Ordered</th>
+          <th>Total Price</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="order-details">
+        <!-- Order details will be dynamically inserted here -->
+      </tbody>
+    </table>
+    <p id="no-orders-message" class="no-orders"></p>
+  </div>
+
+  <!-- OTP Section -->
+  <div id="otpSection">
+    <h2>Enter OTP to Confirm Delivery</h2>
+    <input type="text" id="otpInput" placeholder="Enter OTP" />
+    <button class="otpButton" onclick="verifyOTP()">Verify OTP</button>
+    <p id="otpMessage"></p>
+  </div>
+
+  <script>
+    let generatedOTP = null;
+    let currentOrderIndex = null;
+
+    // Function to load orders from localStorage and display them
+    function loadOrders() {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const orderDetails = document.getElementById('order-details');
+      const noOrdersMessage = document.getElementById('no-orders-message');
+
+      orderDetails.innerHTML = ''; // Clear any existing order details
+
+      if (orders.length === 0) {
+        noOrdersMessage.textContent = "No orders placed yet.";
+        return;
+      }
+
+      noOrdersMessage.textContent = ""; // Clear the 'No orders' message
+
+      orders.forEach((order, index) => {
+        const row = document.createElement('tr');
+
+        // Create table cells for each order property
+        const orderIdCell = document.createElement('td');
+        orderIdCell.textContent = index + 1;
+
+        const customerNameCell = document.createElement('td');
+        customerNameCell.textContent = order.customerName;
+
+        const itemsCell = document.createElement('td');
+        itemsCell.textContent = order.items.map(item => item.name).join(', '); // Display item names
+
+        const totalPriceCell = document.createElement('td');
+        totalPriceCell.textContent = `$${order.totalPrice}`;
+
+        const statusCell = document.createElement('td');
+        statusCell.textContent = order.status;
+
+        const actionCell = document.createElement('td');
+        if (order.status === 'Pending') {
+          const deliverButton = document.createElement('button');
+          deliverButton.textContent = 'Mark as Delivered';
+          deliverButton.onclick = function() {
+            markAsDelivered(index); // Pass the order index to mark it as delivered
+          };
+          actionCell.appendChild(deliverButton);
+        } else {
+          const deliveredLabel = document.createElement('span');
+          deliveredLabel.textContent = 'Delivered';
+          deliveredLabel.classList.add('status-delivered');
+          actionCell.appendChild(deliveredLabel);
+        }
+
+        row.appendChild(orderIdCell);
+        row.appendChild(customerNameCell);
+        row.appendChild(itemsCell);
+        row.appendChild(totalPriceCell);
+        row.appendChild(statusCell);
+        row.appendChild(actionCell);
+
+        orderDetails.appendChild(row);
+      });
+    }
+
+    // Function to mark an order as delivered and send OTP
+    function markAsDelivered(orderIndex) {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const order = orders[orderIndex];
+
+      if (!order) {
+        alert('Order not found!');
+        return;
+      }
+
+      // Generate OTP and simulate sending it
+      generatedOTP = generateOTP();
+      alert(`OTP sent to ${order.customerPhone}: ${generatedOTP}`);
+
+      // Show OTP section for the employee to verify
+      currentOrderIndex = orderIndex;
+      document.getElementById('otpSection').style.display = 'block';
+    }
+
+    // Function to generate a random OTP (6 digits)
+    function generateOTP() {
+      return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+    }
+
+    // Function to verify the OTP entered by the customer
+    function verifyOTP() {
+      const enteredOTP = document.getElementById('otpInput').value;
+      const otpMessage = document.getElementById('otpMessage');
+
+      if (enteredOTP === generatedOTP.toString()) {
+        const orders = JSON.parse(localStorage.getItem('orders')) || [];
+        const order = orders[currentOrderIndex];
+
+        // Update order status to 'Delivered'
+        order.status = 'Delivered';
+        localStorage.setItem('orders', JSON.stringify(orders));
+
+        otpMessage.textContent = 'OTP verified! The order has been successfully delivered.';
+        otpMessage.style.color = 'green';
+
+        // Reload orders to reflect the changes
+        loadOrders();
+
+        // Hide OTP section after successful verification
+        document.getElementById('otpSection').style.display = 'none';
+      } else {
+        otpMessage.textContent = 'Invalid OTP! Please try again.';
+        otpMessage.style.color = 'red';
+      }
+    }
+
+    // Load orders when the page is loaded
+    window.onload = loadOrders;
+  </script>
+
+</body>
+</html>
